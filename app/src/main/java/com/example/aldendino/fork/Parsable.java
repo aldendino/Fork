@@ -7,7 +7,7 @@ public interface Parsable {
     public void clearInput() ;
     public void setAutoCompleteOptions() ;
     public void showErrorToast(String errorMessage) ;
-    public void openRemoveDialog() ;
+    public void openRemoveAllDialog() ;
     //
     public ListTree getCurrent() ;
     public ListTree getRoot() ;

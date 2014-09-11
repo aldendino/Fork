@@ -25,6 +25,7 @@ import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -32,16 +33,18 @@ import android.widget.Toast;
 
 public class MainActivity extends Activity implements Parsable, IOable {
 
+    private enum AddPos {TOP, BOTTOM}
     //private AutoCompleteTextView commandInput ;
     private TextView textViewBanner;
     private ListView listView ;
     //private Button enterButton ;
-    //private Button addButton ;
+    private Button addButton ;
     private EditText addEditText ;
 
     public ListTree root ;
     public ListTree current ;
     public ListTree previous ;
+    public ArrayList<ListTree> copied;
 
     private Scanner scanner ;
     private Parser parser ;
@@ -70,12 +73,16 @@ public class MainActivity extends Activity implements Parsable, IOable {
         parser = new Parser(this) ;
         clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
         preferences = PreferenceManager.getDefaultSharedPreferences(this) ;
+        copied = new ArrayList<ListTree>();
 
         textViewBanner = (TextView) findViewById(R.id.textViewBanner);
         //commandInput = (AutoCompleteTextView) findViewById(R.id.autoCompleteTextView1) ;
         listView = (ListView) findViewById(R.id.listView1) ;
         //enterButton = (Button) findViewById(R.id.button1) ;
-        //addButton = (Button) findViewById(R.id.button2) ;
+
+        View footerView = getLayoutInflater().inflate(R.layout.footer_button, null);
+        listView.addFooterView(footerView);
+        addButton = (Button) footerView.findViewById(R.id.button2) ;
 
         io.importData() ;
         //setAutoCompleteOptions() ;
@@ -96,17 +103,17 @@ public class MainActivity extends Activity implements Parsable, IOable {
             }
         }) ;*/
 
-        /*addButton.setOnClickListener(new View.OnClickListener() {
+        addButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                openAddDialog() ;
+                openAddDialog(AddPos.BOTTOM) ;
             }
-        }) ;*/
+        }) ;
 
         listView.setOnItemClickListener(new OnItemClickListener() {
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 setCurrent(getCurrent().list.get(position)) ;
-                getCurrentPath().add(position) ;
+                //getCurrentPath().add(position) ;
                 //clearInput() ;
                 //setAutoCompleteOptions() ;
                 cleanUp() ;
@@ -138,7 +145,7 @@ public class MainActivity extends Activity implements Parsable, IOable {
         else {
             setPrevious(getCurrent()) ;
             setCurrent(getCurrent().parent) ;
-            getCurrentPath().remove(getCurrentPath().size() - 1) ;
+            //getCurrentPath().remove(getCurrentPath().size() - 1) ;
             //clearInput() ;
             //setAutoCompleteOptions() ;
             cleanUp() ;
@@ -174,15 +181,27 @@ public class MainActivity extends Activity implements Parsable, IOable {
         switch (item.getItemId())
         {
             case R.id.action_add: {
-                openAddDialog();
+                openAddDialog(AddPos.TOP);
                 break;
             }
             case R.id.action_remove: {
-                openRemoveDialog();
+                openRemoveAllDialog();
                 break;
             }
             case R.id.action_share: {
                 startEmail("Fork Backup", getClipboardString());
+                break;
+            }
+            case R.id.action_copy: {
+                copyList(current);
+                break;
+            }
+            case R.id.action_paste: {
+                pasteList(current);
+                break;
+            }
+            case R.id.action_move: {
+                moveList(current);
                 break;
             }
         	/*case R.id.action_settings: {
@@ -280,28 +299,8 @@ public class MainActivity extends Activity implements Parsable, IOable {
     private void populateListView()
     {
         ListTree[] items = current.getListArray() ;
-        /*String[] strings  = null ;
-        if(items == null)
-        {
-            //items = new ListTree[0] ;
-            strings = new String[0] ;
-        }
-        else
-        {
-            strings = new String[items.length] ;
-            for(int i = 0 ; i < items.length ; i++)
-            {
-                String itemString = "" + (i + 1) + ".  " + items[i].toString() ;
-                if(items[i].isList() && !items[i].list.isEmpty()) itemString += "  (" + items[i].list.size() + ")" ;
-                strings[i] = itemString ;
-            }
-        }*/
-
-        //ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, strings);
-        //listView.setAdapter(adapter);
         ListAdapter listAdapter = new ListAdapter(this, items);
         listView.setAdapter(listAdapter) ;
-
     }
 
 
@@ -472,7 +471,7 @@ public class MainActivity extends Activity implements Parsable, IOable {
         return options ;
     }
 
-    public void openRemoveDialog()
+    public void openRemoveAllDialog()
     {
         AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(MainActivity.this) ;
         //alertDialogBuilder.setTitle(this.getTitle()) ;
@@ -497,7 +496,7 @@ public class MainActivity extends Activity implements Parsable, IOable {
         messageView.setGravity(Gravity.CENTER);
     }
 
-    public void openRemoveAlert(int position)
+    public void openRemoveDialog(int position)
     {
         final int pos = position;
         AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(MainActivity.this) ;
@@ -541,7 +540,7 @@ public class MainActivity extends Activity implements Parsable, IOable {
             public void onClick(DialogInterface dialog, int id) {
                 String input = editText.getText().toString();
                 if(!input.equals("")) {
-                    changeListText(theList, input) ;
+                    theList.name = input;
                     cleanUp() ;
                     //setAutoCompleteOptions() ;
                 }
@@ -558,11 +557,7 @@ public class MainActivity extends Activity implements Parsable, IOable {
         //imm.toggleSoftInput(InputMethodManager.SHOW_FORCED,0);
     }
 
-    public void changeListText(ListTree list, String text) {
-        list.name = text ;
-    }
-
-    public void openAddDialog() {
+    public void openAddDialog(final AddPos location) {
         final AlertDialog.Builder builder = new AlertDialog.Builder(this);
         LayoutInflater inflater = this.getLayoutInflater();
         builder.setTitle("Add") ;
@@ -576,8 +571,10 @@ public class MainActivity extends Activity implements Parsable, IOable {
 
                         String input = addEditText.getText().toString();
                         if(!input.equals("")) {
-                            current.addLeafFirst(input) ;
+                            if(location == AddPos.TOP) current.addLeafFirst(input);
+                            if(location == AddPos.BOTTOM) current.addLeaf(input);
                             cleanUp() ;
+                            //if(location == AddPos.BOTTOM) scrollToBottom(); //Not working :/
                             //setAutoCompleteOptions() ;
                         }
                         else {
@@ -643,19 +640,16 @@ public class MainActivity extends Activity implements Parsable, IOable {
     public void createOptions(int position) {
         final int pos = position;
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        String[] options = new String[2];
+        String[] options = new String[3];
         options[0] = "Edit";
-        options[1] = "Remove";
+        options[1] = "Copy";
+        options[2] = "Remove";
         builder.setTitle("Options")
                 .setItems(options, new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
-                        // The 'which' argument contains the index position
-                        // of the selected item
-                        //final int pos = position;
-                        if(which == 0) openEditor(current.list.get(pos));
-                        else if(which == 1) {
-                            openRemoveAlert(pos);
-                        }
+                        if (which == 0) openEditor(current.list.get(pos));
+                        else if (which == 1) copyList(current.list.get(pos));
+                        else openRemoveDialog(pos);
                     }
                 });
         builder.create().show();
@@ -675,6 +669,50 @@ public class MainActivity extends Activity implements Parsable, IOable {
         if(location.parent == null) return content;
         content = location.parent.name + divider + content;
         return getPathStringRecurse(content, divider, location.parent);
+    }
+
+    public void copyList(ListTree source) {
+        copied.add(source);
+    }
+
+    public void pasteList(ListTree destination) {
+        for(ListTree source : copied) {
+            listCopyRecurse(source, destination);
+            copied.clear();
+            cleanUp();
+        }
+    }
+
+    public void moveList(ListTree destination) {
+        for(ListTree source : copied) {
+            if(source.parent == null) {
+                showErrorToast("Cannot move ROOT");
+            }
+            else {
+                if(listMoveCheck(source, destination)) {
+                    listCopyRecurse(source, destination);
+                    if(!source.parent.removeListAt(source.parent.list.indexOf(source) + 1)) showErrorToast("bool");
+                    copied.clear();
+                    cleanUp();
+                }
+            }
+        }
+    }
+
+    public void listCopyRecurse(ListTree source, ListTree destination) {
+        ListTree item = new ListTree(source.name, destination);
+        destination.addListLast(item);
+        if(source.isList()) {
+            for(ListTree sourceItem : source.list) {
+                listCopyRecurse(sourceItem, item);
+            }
+        }
+    }
+
+    public boolean listMoveCheck(ListTree source, ListTree destination) {
+        if(source == destination) return false;
+        if(destination.parent == null) return true;
+        return listMoveCheck(source, destination.parent);
     }
 }
 

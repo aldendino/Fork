@@ -63,6 +63,20 @@ public class ListTree implements Serializable {
         }
     }
 
+    public void addListFirst(ListTree item)
+    {
+        convertToList();
+        list.add(0, item);
+        item.parent = this;
+    }
+
+    public void addListLast(ListTree item)
+    {
+        convertToList();
+        list.add(item);
+        item.parent = this;
+    }
+
     public ListTree getList(String listName)
     {
         if(isList())
@@ -76,6 +90,10 @@ public class ListTree implements Serializable {
             }
         }
         return null ;
+    }
+
+    public void removeList(ListTree item) {
+        list.remove(item);
     }
 
     public void removeList(String listName)

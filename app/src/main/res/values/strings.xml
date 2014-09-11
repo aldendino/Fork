@@ -11,9 +11,13 @@
     <string name="accept">Accept</string>
     <string name="cancel">Cancel</string>
     <string name="delete">X</string>
+
     <string name="action_add">Add</string>
     <string name="action_remove">Remove All</string>
     <string name="action_share">Share</string>
+    <string name="action_copy">Copy</string>
+    <string name="action_paste">Paste</string>
+    <string name="action_move">Move</string>
 
     <color name="banner_colour">#404040</color>
     <!--

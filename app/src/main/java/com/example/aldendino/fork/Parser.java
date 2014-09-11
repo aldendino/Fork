@@ -267,7 +267,7 @@ public class Parser {
         {
             if(parsee.getCurrent().isList())
             {
-                parsee.openRemoveDialog() ;
+                parsee.openRemoveAllDialog() ;
             }
         }
     }
