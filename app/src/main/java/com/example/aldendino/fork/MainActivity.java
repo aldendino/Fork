@@ -27,18 +27,17 @@ import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-public class MainActivity extends Activity implements Parsable, IOable {
+public class MainActivity extends Activity implements IOable {
 
     private enum AddPos {TOP, BOTTOM}
-    //private AutoCompleteTextView commandInput ;
     private TextView textViewBanner;
     private ListView listView ;
-    //private Button enterButton ;
-    private Button addButton ;
+    private ImageButton addButton ;
     private EditText addEditText ;
 
     public ListTree root ;
@@ -47,7 +46,6 @@ public class MainActivity extends Activity implements Parsable, IOable {
     public ArrayList<ListTree> copied;
 
     private Scanner scanner ;
-    private Parser parser ;
     private String baseTitle ;
     private final int titleLimit = 15 ;
 
@@ -70,38 +68,21 @@ public class MainActivity extends Activity implements Parsable, IOable {
         this.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN) ;
 
         io = new IOManager(this) ;
-        parser = new Parser(this) ;
         clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
         preferences = PreferenceManager.getDefaultSharedPreferences(this) ;
         copied = new ArrayList<ListTree>();
 
         textViewBanner = (TextView) findViewById(R.id.textViewBanner);
-        //commandInput = (AutoCompleteTextView) findViewById(R.id.autoCompleteTextView1) ;
         listView = (ListView) findViewById(R.id.listView1) ;
-        //enterButton = (Button) findViewById(R.id.button1) ;
 
         View footerView = getLayoutInflater().inflate(R.layout.footer_button, null);
         listView.addFooterView(footerView);
-        addButton = (Button) footerView.findViewById(R.id.button2) ;
+        addButton = (ImageButton) footerView.findViewById(R.id.button2) ;
 
         io.importData() ;
-        //setAutoCompleteOptions() ;
 
         baseTitle = getTitle().toString() ;//getString(R.string.app_name) ;
         populateListView() ;
-
-        /*enterButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                scanner = new Scanner(commandInput.getText().toString()) ;
-                while(scanner.hasNextLine())
-                {
-                    String line = scanner.nextLine() ;
-                    parser.parseString(line) ;
-                }
-                cleanUp() ;
-            }
-        }) ;*/
 
         addButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -114,29 +95,16 @@ public class MainActivity extends Activity implements Parsable, IOable {
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 setCurrent(getCurrent().list.get(position)) ;
                 //getCurrentPath().add(position) ;
-                //clearInput() ;
-                //setAutoCompleteOptions() ;
                 cleanUp() ;
-                //Toast.makeText(getApplicationContext(), "Click ListItem Number " + position, Toast.LENGTH_LONG).show();
             }
         }) ;
 
         listView.setOnItemLongClickListener(new OnItemLongClickListener() {
             public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
                 createOptions(position);
-                //openEditor(current.list.get(position)) ;
-                //Toast.makeText(getApplicationContext(), "Click ListItem Number " + position, Toast.LENGTH_LONG).show();
                 return true ;
             }
         }) ;
-
-        //Experimental way to enter to perform command on AutoComplete
-		/*commandInput.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-			@Override
-			public void onItemClick(AdapterView<?> arg0, View arg1, int arg2, long arg3) {
-				enterButton.performClick() ;
-			}
-		}) ;*/
     }
 
     @Override
@@ -146,12 +114,9 @@ public class MainActivity extends Activity implements Parsable, IOable {
             setPrevious(getCurrent()) ;
             setCurrent(getCurrent().parent) ;
             //getCurrentPath().remove(getCurrentPath().size() - 1) ;
-            //clearInput() ;
-            //setAutoCompleteOptions() ;
             cleanUp() ;
             scrollToList(previous);
         }
-        //return;
     }
 
     @Override
@@ -270,30 +235,7 @@ public class MainActivity extends Activity implements Parsable, IOable {
 
     private void updateTitle()
     {
-        if(current != root && getLevel(current) != 0)
-        {
-            String currentItemString = "" ;
-            if(current.toString().length() > titleLimit) {
-                currentItemString = current.toString().substring(0, titleLimit) + " ..." ;
-            }
-            else {
-                currentItemString = current.toString();
-            }
-            String finalTitle = baseTitle + " - " + currentItemString + " (" + getLevel(current) + ")";
-            //getActionBar().setTitle(finalTitle);
-            textViewBanner.setText(getPathString());
-
-        }
-        else
-        {
-            //getActionBar().setTitle(baseTitle) ;
-            textViewBanner.setText(getPathString());
-        }
-    }
-
-    public void clearInput()
-    {
-        //commandInput.setText("") ;
+        textViewBanner.setText(getPathString());
     }
 
     private void populateListView()
@@ -303,14 +245,12 @@ public class MainActivity extends Activity implements Parsable, IOable {
         listView.setAdapter(listAdapter) ;
     }
 
-
     public void savePreferences()
     {
         SharedPreferences.Editor editor = preferences.edit();
         //editor.putInt(COUNT_KEY, levelCount) ;
         //editor.commit();
     }
-
 
     public void showErrorToast(String message)
     {
@@ -336,8 +276,6 @@ public class MainActivity extends Activity implements Parsable, IOable {
         {
             current.removeAll();
             if(current.list.isEmpty()) current.list = null ;
-            //clearInput() ;
-            //setAutoCompleteOptions() ;
         }
     }
 
@@ -404,7 +342,6 @@ public class MainActivity extends Activity implements Parsable, IOable {
     {
         clipboardString = "" ;
         setClipRecurse(root, "");
-        //System.out.println(clipboardString) ;
     }
 
     private void setClipRecurse(ListTree temp, String white_space)
@@ -421,60 +358,9 @@ public class MainActivity extends Activity implements Parsable, IOable {
         }
     }
 
-
-
-    /*  
-     * Note the potential problem that multiple occurrences show up in order, 
-     * but all will be removed on selecting either of them... awkward.
-     */
-    public void setAutoCompleteOptions()
-    {
-        ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, getAutoCompleteOptions()) ;
-        //commandInput.setAdapter(adapter) ;
-    }
-
-    private String[] getAutoCompleteOptions()
-    {
-        String[] options ;
-        ArrayList<String> optionList = new ArrayList<String>() ;
-        //
-        //optionList.add(Parser.ADD + " ") ; //not complete
-        if(current.parent != null)
-        {
-            optionList.add(Parser.CHANGE_DIR + " " + Parser.ROOT) ;
-            optionList.add(Parser.CHANGE_DIR + " " + Parser.PARENT) ;
-        }
-        optionList.add(Parser.CLIP) ;
-        optionList.add(Parser.CLIP_ALL) ;
-        optionList.add(Parser.EMAIL);
-        //optionList.add(Parser.MOVE + " ") ; //not complete
-        if(current.list != null) optionList.add("rm") ;
-        //optionList.add(Parser.SWAP + " ") ; //not complete
-        if(current.isList())
-        {
-            for(ListTree item : current.list)
-            {
-                optionList.add(Parser.CHANGE_DIR + " " + item) ;
-                optionList.add(Parser.REMOVE + " " + item) ;
-            }
-            //Option to add index removal to AutoComplete list
-    		/*for(int i = 0 ; i < current.list.size() ; i++)
-    		{
-    			optionList.add(Parser.REMOVE + " " + (i+1)) ;
-    			optionList.add(Parser.CHANGE_DIR + " " + (i+1)) ;
-    			//add swp option ?
-    			//add mv option ?
-    		}*/
-        }
-        //
-        options = optionList.toArray(new String[optionList.size()]) ;
-        return options ;
-    }
-
     public void openRemoveAllDialog()
     {
         AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(MainActivity.this) ;
-        //alertDialogBuilder.setTitle(this.getTitle()) ;
         alertDialogBuilder.setTitle("Remove All?") ;
         alertDialogBuilder.setMessage("Would you like to\nremove all items?") ;
         //
@@ -500,7 +386,6 @@ public class MainActivity extends Activity implements Parsable, IOable {
     {
         final int pos = position;
         AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(MainActivity.this) ;
-        //alertDialogBuilder.setTitle(this.getTitle()) ;
         alertDialogBuilder.setTitle("Remove") ;
         alertDialogBuilder.setMessage("Remove this item?\n\"" + current.list.get(pos).name + "\"") ;
         //
@@ -542,7 +427,6 @@ public class MainActivity extends Activity implements Parsable, IOable {
                 if(!input.equals("")) {
                     theList.name = input;
                     cleanUp() ;
-                    //setAutoCompleteOptions() ;
                 }
                 else {
                     Toast.makeText(getApplicationContext(), "Invalid list name", Toast.LENGTH_SHORT).show() ;
@@ -552,9 +436,6 @@ public class MainActivity extends Activity implements Parsable, IOable {
         AlertDialog ad = builder.create();
         ad.show();
         ad.getWindow().setSoftInputMode (WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE);
-
-        //InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-        //imm.toggleSoftInput(InputMethodManager.SHOW_FORCED,0);
     }
 
     public void openAddDialog(final AddPos location) {
@@ -575,14 +456,10 @@ public class MainActivity extends Activity implements Parsable, IOable {
                             if(location == AddPos.BOTTOM) current.addLeaf(input);
                             cleanUp() ;
                             //if(location == AddPos.BOTTOM) scrollToBottom(); //Not working :/
-                            //setAutoCompleteOptions() ;
                         }
                         else {
                             Toast.makeText(getApplicationContext(), "Invalid list name", Toast.LENGTH_SHORT).show() ;
                         }
-                        //Toast.makeText(getApplicationContext(), addEditText.getText(), Toast.LENGTH_SHORT).show() ;
-                        //if(addEditText == null) Toast.makeText(getApplicationContext(), "true", Toast.LENGTH_SHORT).show() ;
-
 
                     }
                 })
@@ -594,14 +471,6 @@ public class MainActivity extends Activity implements Parsable, IOable {
         AlertDialog ad = builder.create();
         ad.show();
         ad.getWindow().setSoftInputMode (WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE);
-
-        //InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-        //imm.toggleSoftInput(InputMethodManager.SHOW_IMPLICIT,0);
-        	
-        	/*EditText addEditText2 = (EditText) findViewById(R.id.addEditText) ;
-        	String damn = "zack : The idea that it is null is " + (addEditText2 == null);
-        	Log.d("Zack", damn);*/
-        //Toast.makeText(getApplicationContext(), damn, Toast.LENGTH_SHORT).show() ;
     }
 
     public void scrollToBottom()
@@ -634,7 +503,6 @@ public class MainActivity extends Activity implements Parsable, IOable {
     	emailIntent.putExtra(Intent.EXTRA_EMAIL, "");
     	emailIntent.putExtra(android.content.Intent.EXTRA_SUBJECT, subject);
     	emailIntent.putExtra(android.content.Intent.EXTRA_TEXT, content);*/
-        //clearInput();
     }
 
     public void createOptions(int position) {

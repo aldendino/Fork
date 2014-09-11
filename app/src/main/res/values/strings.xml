@@ -20,9 +20,5 @@
     <string name="action_move">Move</string>
 
     <color name="banner_colour">#404040</color>
-    <!--
-    <color name="textColour">#B2EDED</color>
-    -->
-
 
 </resources>
