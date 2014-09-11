@@ -3,9 +3,6 @@ package com.example.aldendino.fork;
 import java.io.Serializable;
 import java.util.ArrayList ;
 
-/**
- * Created by aldendino on 2014-09-07.
- */
 public class ListTree implements Serializable {
     private static final long serialVersionUID = -6110776202976443110L;
     public String name ;
@@ -94,7 +91,7 @@ public class ListTree implements Serializable {
 
     public void removeList(ListTree item) {
         list.remove(item);
-    }
+    } //May have problems
 
     public void removeList(String listName)
     {
@@ -181,14 +178,12 @@ public class ListTree implements Serializable {
 
     public boolean isInRange(int index)
     {
-        if(isList()) return index >= 0 && index < list.size();
-        return false ;
+        return isList() && index >= 0 && index < list.size();
     }
 
     public boolean isInRangeTo(int index, int limit)
     {
-        if(isList()) return index > 0 && index < limit ;
-        return false ;
+        return isList() && index > 0 && index < limit ;
     }
 
     public void convertToList()
@@ -201,11 +196,7 @@ public class ListTree implements Serializable {
 
     public ListTree[] getListArray()
     {
-        if(isList())
-        {
-            ListTree[] array = list.toArray(new ListTree[list.size()]) ;
-            return array ;
-        }
+        if(isList()) return list.toArray(new ListTree[list.size()]);
         return new ListTree[0] ;
     }
 

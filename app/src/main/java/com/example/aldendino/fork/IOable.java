@@ -7,7 +7,7 @@ import java.util.ArrayList;
 
 import android.content.Context;
 
-public interface IOable {
+public interface IOAble {
     public FileInputStream openFileInput(String filename) throws FileNotFoundException ;
     public FileOutputStream openFileOutput(String filename, int contextMode) throws FileNotFoundException ;
     //

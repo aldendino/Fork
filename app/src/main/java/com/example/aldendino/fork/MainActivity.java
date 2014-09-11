@@ -1,7 +1,6 @@
 package com.example.aldendino.fork;
 
 import java.util.ArrayList;
-import java.util.Scanner;
 
 import android.net.Uri;
 import android.os.Bundle;
@@ -30,7 +29,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-public class MainActivity extends Activity implements IOable {
+public class MainActivity extends Activity implements IOAble {
 
     private enum AddPos {TOP, BOTTOM}
     private TextView textViewBanner;
@@ -43,9 +42,7 @@ public class MainActivity extends Activity implements IOable {
     public ListTree previous ;
     public ArrayList<ListTree> copied;
 
-    private Scanner scanner ;
     private String baseTitle ;
-    private final int titleLimit = 15 ;
 
     private ArrayList<Integer> currentPath ;
 
@@ -92,7 +89,7 @@ public class MainActivity extends Activity implements IOable {
         listView.setOnItemClickListener(new OnItemClickListener() {
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 setCurrent(getCurrent().list.get(position)) ;
-                //getCurrentPath().add(position) ;
+                getCurrentPath().add(position) ; // May cause exception
                 cleanUp() ;
             }
         }) ;
@@ -111,9 +108,9 @@ public class MainActivity extends Activity implements IOable {
         else {
             setPrevious(getCurrent()) ;
             setCurrent(getCurrent().parent) ;
-            //getCurrentPath().remove(getCurrentPath().size() - 1) ;
+            getCurrentPath().remove(getCurrentPath().size() - 1) ; // May cause exception
             cleanUp() ;
-            scrollToList(previous);
+            scrollToList(getPrevious());
         }
     }
 
@@ -521,10 +518,6 @@ public class MainActivity extends Activity implements IOable {
         builder.create().show();
     }
 
-    public Activity getActivity() {
-        return this;
-    }
-
     public String getPathString() {
         String content = getCurrent().name;
         if(getCurrent().parent == null) return content;
@@ -581,4 +574,3 @@ public class MainActivity extends Activity implements IOable {
         return listMoveCheck(source, destination.parent);
     }
 }
-

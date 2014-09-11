@@ -11,13 +11,13 @@ import android.content.Context;
 
 public class IOManager {
 
-    private IOable ioable ;
+    private IOAble ioable ;
 
-    private final String ROOT_NAME = "ROOT" ;
-    private final String DATA_FILENAME = "data" ;
-    private final String CURRENT_FILENAME = "current" ;
+    private String rootName = "ROOT" ;
+    private String dataFilename = "data" ;
+    private String currentFilename = "current" ;
 
-    public IOManager(IOable ioable) {
+    public IOManager(IOAble ioable) {
         this.ioable = ioable ;
     }
 
@@ -30,7 +30,7 @@ public class IOManager {
         }
         catch(Exception e)
         {
-            ioable.setRoot(new ListTree(ROOT_NAME, null)) ;
+            ioable.setRoot(new ListTree(rootName, null)) ;
         }
 
         try
@@ -56,7 +56,7 @@ public class IOManager {
 
     public ListTree readRoot() throws ClassNotFoundException, IOException
     {
-        FileInputStream fis = ioable.openFileInput(DATA_FILENAME) ;
+        FileInputStream fis = ioable.openFileInput(dataFilename) ;
         ObjectInputStream ois = new ObjectInputStream(fis) ;
         ListTree temp = (ListTree) ois.readObject() ;
         ois.close();
@@ -64,9 +64,9 @@ public class IOManager {
         return temp ;
     }
 
-    public ArrayList<Integer> readCurrent() throws ClassNotFoundException, IOException, Exception
+    public ArrayList<Integer> readCurrent() throws ClassNotFoundException, IOException
     {
-        FileInputStream fis = ioable.openFileInput(CURRENT_FILENAME) ;
+        FileInputStream fis = ioable.openFileInput(currentFilename) ;
         ObjectInputStream ois = new ObjectInputStream(fis) ;
         @SuppressWarnings("unchecked") //Unsafe casting
                 ArrayList<Integer> temp = (ArrayList<Integer>) ois.readObject() ;
@@ -79,21 +79,25 @@ public class IOManager {
     {
         try
         {
-            FileOutputStream fos = ioable.openFileOutput(DATA_FILENAME, Context.MODE_PRIVATE);
+            FileOutputStream fos = ioable.openFileOutput(dataFilename, Context.MODE_PRIVATE);
             ObjectOutputStream oos = new ObjectOutputStream(fos) ;
             oos.writeObject(ioable.getRoot());
             oos.close();
             fos.close();
         }
-        catch(IOException ioe) {}
+        catch(IOException ioe) {
+            ioable.showErrorToast("Could not save \'" + dataFilename + "\'");
+        }
         try
         {
-            FileOutputStream fos = ioable.openFileOutput(CURRENT_FILENAME, Context.MODE_PRIVATE);
+            FileOutputStream fos = ioable.openFileOutput(currentFilename, Context.MODE_PRIVATE);
             ObjectOutputStream oos = new ObjectOutputStream(fos) ;
             oos.writeObject(ioable.getCurrentPath());
             oos.close();
             fos.close();
         }
-        catch(IOException ioe) {}
+        catch(IOException ioe) {
+            ioable.showErrorToast("Could not save \'" + currentFilename + "\'");
+        }
     }
 }
