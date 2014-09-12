@@ -40,7 +40,7 @@ public class MainActivity extends Activity implements IOAble {
     public ListTree root ;
     public ListTree current ;
     public ListTree previous ;
-    public ArrayList<ListTree> copied;
+    public ListTree copied;
 
     private String baseTitle ;
 
@@ -50,7 +50,7 @@ public class MainActivity extends Activity implements IOAble {
     //private final String COUNT_KEY = "count" ;
     //private final int COUNT_DEFAULT = 0 ;*/
 
-    private ClipboardManager clipboard ;
+    private ClipboardManager clipboardManager ;
     private String clipboardString = "" ;
 
     private IOManager io ;
@@ -63,9 +63,9 @@ public class MainActivity extends Activity implements IOAble {
         this.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN) ;
 
         io = new IOManager(this) ;
-        clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
+        clipboardManager = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
         preferences = PreferenceManager.getDefaultSharedPreferences(this) ;
-        copied = new ArrayList<ListTree>();
+        copied = null;
 
         textViewBanner = (TextView) findViewById(R.id.textViewBanner);
         listView = (ListView) findViewById(R.id.listView1) ;
@@ -150,6 +150,10 @@ public class MainActivity extends Activity implements IOAble {
             }
             case R.id.action_share: {
                 startEmail("Fork Backup", getClipboardString());
+                break;
+            }
+            case R.id.action_clip: {
+                setClipboard(current.name, getListAsString(current));
                 break;
             }
             case R.id.action_copy: {
@@ -247,7 +251,7 @@ public class MainActivity extends Activity implements IOAble {
         //editor.commit();
     }
 
-    public void showErrorToast(String message)
+    public void showToast(String message)
     {
         Toast.makeText(getApplicationContext(), message, Toast.LENGTH_SHORT).show() ;
     }
@@ -280,50 +284,31 @@ public class MainActivity extends Activity implements IOAble {
     {
         if(rootTree != null)
         {
-            String output = "" ;
+            String output = rootTree.name ;
             if(rootTree.isList())
             {
-                int count = 0 ;
-                for(ListTree list : rootTree.list)
+                String indent = "    ";
+                for(ListTree item : rootTree.list)
                 {
-                    String listSize = "" ;
-                    if(list.isList())
-                    {
-                        if(!list.list.isEmpty())
-                        {
-                            listSize = "  (" + list.list.size() + ")" ;
-                        }
-                    }
-                    String offset = "" ;
-                    count++ ;
-                    if(count < 10) offset = "      " ;
-                    else if(count < 100) offset = "    " ;
-                    else if(count < 1000) offset = "  " ;
-                    output += count + ". " + offset + list + listSize + "\n" ;
+                    output += "\n" + indent + item.name;
                 }
             }
             return output ;
-
         }
         else
         {
-            showErrorToast("List is null") ;
+            showToast("List is null") ;
             return "" ;
         }
     }
 
-    public void saveTextToClipboard(String text)
-    {
-        //setClip() ;
-        ClipData clip = ClipData.newPlainText(baseTitle + " data", text) ;
-        if(clipboard != null)
-        {
-            clipboard.setPrimaryClip(clip) ;
-            showErrorToast("Saved to clipboard") ;
-        }
-        else
-        {
-            showErrorToast("Error saving to clipboard") ;
+    public void setClipboard(String label, String text) {
+        ClipData clip = ClipData.newPlainText(label, text);
+        if(clipboardManager != null) {
+            clipboardManager.setPrimaryClip(clip);
+            showToast("List saved to clipboard");
+        } else {
+            showToast("Error saving to clipboard");
         }
     }
 
@@ -503,15 +488,17 @@ public class MainActivity extends Activity implements IOAble {
     public void createOptions(int position) {
         final int pos = position;
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        String[] options = new String[3];
-        options[0] = "Edit";
-        options[1] = "Copy";
-        options[2] = "Remove";
+        String[] options = new String[4];
+        options[0] = "Clip";
+        options[1] = "Edit";
+        options[2] = "Copy";
+        options[3] = "Remove";
         builder.setTitle("Options")
                 .setItems(options, new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
-                        if (which == 0) openEditor(current.list.get(pos));
-                        else if (which == 1) copyList(current.list.get(pos));
+                        if (which == 0) setClipboard("Fork List", current.list.get(pos).name);
+                        else if (which == 1) openEditor(current.list.get(pos));
+                        else if (which == 2) copyList(current.list.get(pos));
                         else openRemoveDialog(pos);
                     }
                 });
@@ -531,27 +518,27 @@ public class MainActivity extends Activity implements IOAble {
     }
 
     public void copyList(ListTree source) {
-        copied.add(source);
+        copied = source;
     }
 
     public void pasteList(ListTree destination) {
-        for(ListTree source : copied) {
-            listCopyRecurse(source, destination);
-            copied.clear();
+        if(copied != null) {
+            listCopyRecurse(copied, destination);
+            copied = null;
             cleanUp();
         }
     }
 
     public void moveList(ListTree destination) {
-        for(ListTree source : copied) {
-            if(source.parent == null) {
-                showErrorToast("Cannot move ROOT");
+        if(copied != null) {
+            if(copied.parent == null) {
+                showToast("Cannot move ROOT");
             }
             else {
-                if(listMoveCheck(source, destination)) {
-                    listCopyRecurse(source, destination);
-                    if(!source.parent.removeListAt(source.parent.list.indexOf(source) + 1)) showErrorToast("bool");
-                    copied.clear();
+                if(listMoveCheck(copied, destination)) {
+                    listCopyRecurse(copied, destination);
+                    copied.parent.removeListAt(copied.parent.list.indexOf(copied) + 1);
+                    copied = null;
                     cleanUp();
                 }
             }

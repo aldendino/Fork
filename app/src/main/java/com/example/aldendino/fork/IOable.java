@@ -18,5 +18,5 @@ public interface IOAble {
     //
     public ArrayList<Integer> getCurrentPath() ;
     public void setCurrentPath(ArrayList<Integer> currentPath) ;
-    public void showErrorToast(String string) ;
+    public void showToast(String string) ;
 }

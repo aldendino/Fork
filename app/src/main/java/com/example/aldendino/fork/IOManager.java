@@ -48,7 +48,7 @@ public class IOManager {
         }
         catch(Exception e)
         {
-            ioable.showErrorToast("Current path exception") ;
+            ioable.showToast("Current path exception") ;
             ioable.setCurrentPath(new ArrayList<Integer>()) ;
             ioable.setCurrent(ioable.getRoot()) ;
         }
@@ -86,7 +86,7 @@ public class IOManager {
             fos.close();
         }
         catch(IOException ioe) {
-            ioable.showErrorToast("Could not save \'" + dataFilename + "\'");
+            ioable.showToast("Could not save \'" + dataFilename + "\'");
         }
         try
         {
@@ -97,7 +97,7 @@ public class IOManager {
             fos.close();
         }
         catch(IOException ioe) {
-            ioable.showErrorToast("Could not save \'" + currentFilename + "\'");
+            ioable.showToast("Could not save \'" + currentFilename + "\'");
         }
     }
 }
