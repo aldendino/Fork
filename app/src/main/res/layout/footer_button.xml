@@ -11,6 +11,6 @@
         android:textAppearance="?android:attr/textAppearanceLarge"
         style="?android:attr/buttonStyleSmall"
         android:background="@android:color/transparent"
-        android:text="+" />
+        android:text="@string/add_button" />
 
 </LinearLayout>

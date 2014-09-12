@@ -390,8 +390,8 @@ public class MainActivity extends Activity implements IOAble {
     public void openEditor(ListTree list) {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         LayoutInflater inflater = this.getLayoutInflater();
-        final View editView = inflater.inflate(R.layout.dialog_add, null) ;
-        final EditText editText = (EditText) editView.findViewById(R.id.addEditText) ;
+        final View editView = inflater.inflate(R.layout.dialog_edit, null) ;
+        final EditText editText = (EditText) editView.findViewById(R.id.editEditText) ;
         editText.setText(list.name) ;
         editText.setSelection(list.name.length()) ;
         builder.setTitle("Edit") ;

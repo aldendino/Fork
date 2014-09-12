@@ -8,7 +8,7 @@
 
     <TextView
         android:id="@+id/textViewBanner"
-        android:background="@color/banner_colour"
+        android:background="@color/wine_dregs"
         android:singleLine="true"
         android:ellipsize="middle"
         android:paddingTop="@dimen/bannerPadding"
@@ -17,6 +17,8 @@
         android:paddingRight="@dimen/bannerPadding"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
+
+    <View style="@style/Divider" />
 
     <ListView
         android:id="@+id/listView1"
