@@ -24,7 +24,7 @@ import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.EditText;
-import android.widget.ImageButton;
+import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -34,7 +34,7 @@ public class MainActivity extends Activity implements IOAble {
     private enum AddPos {TOP, BOTTOM}
     private TextView textViewBanner;
     private ListView listView ;
-    private ImageButton addButton ;
+    private Button addButton ;
     private EditText addEditText ;
 
     public ListTree root ;
@@ -72,7 +72,7 @@ public class MainActivity extends Activity implements IOAble {
 
         View footerView = getLayoutInflater().inflate(R.layout.footer_button, null);
         listView.addFooterView(footerView);
-        addButton = (ImageButton) footerView.findViewById(R.id.button2) ;
+        addButton = (Button) footerView.findViewById(R.id.button2) ;
 
         io.importData() ;
 
