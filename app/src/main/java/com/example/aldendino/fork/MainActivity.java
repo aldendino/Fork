@@ -78,6 +78,7 @@ public class MainActivity extends Activity implements IOAble {
 
         baseTitle = getTitle().toString() ;//getString(R.string.app_name) ;
         populateListView() ;
+        setHome();
 
         addButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -140,6 +141,10 @@ public class MainActivity extends Activity implements IOAble {
     {
         switch (item.getItemId())
         {
+            case android.R.id.home: {
+                goToRoot();
+                break;
+            }
             case R.id.action_add: {
                 openAddDialog(AddPos.TOP);
                 break;
@@ -236,6 +241,15 @@ public class MainActivity extends Activity implements IOAble {
 
     //Update GUI
 
+    private void goToRoot() {
+        setCurrent(getRoot());
+        cleanUp();
+    }
+
+    private void setHome() {
+        getActionBar().setDisplayHomeAsUpEnabled(current != root);
+    }
+
     private void cleanUp()
     {
         populateListView() ;
@@ -254,6 +268,7 @@ public class MainActivity extends Activity implements IOAble {
         ListTree[] items = current.getListArray() ;
         ListAdapter listAdapter = new ListAdapter(this, items);
         listView.setAdapter(listAdapter) ;
+        setHome();
     }
 
     public void savePreferences()
