@@ -182,6 +182,18 @@ public class MainActivity extends Activity implements IOAble {
         return true ;
     }
 
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        MenuItem pasteItem = menu.findItem(R.id.action_paste);
+        pasteItem.setEnabled(copied != null);
+        pasteItem.setVisible(copied != null);
+        MenuItem moveItem = menu.findItem(R.id.action_move);
+        moveItem.setEnabled(copied != null);
+        moveItem.setVisible(copied != null);
+        super.onPrepareOptionsMenu(menu);
+        return true;
+    }
+
     //Setters and Getters
 
     public void setCurrent(ListTree current)
@@ -519,6 +531,7 @@ public class MainActivity extends Activity implements IOAble {
 
     public void copyList(ListTree source) {
         copied = source;
+        invalidateOptionsMenu();
     }
 
     public void pasteList(ListTree destination) {
