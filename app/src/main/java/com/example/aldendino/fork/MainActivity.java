@@ -523,24 +523,25 @@ public class MainActivity extends Activity implements IOAble {
 
     public void pasteList(ListTree destination) {
         if(copied != null) {
-            listCopyRecurse(copied, destination);
-            copied = null;
-            cleanUp();
+            if(listMoveCheck(copied, destination)) {
+                listCopyRecurse(copied, destination);
+                copied = null;
+                cleanUp();
+            } else {
+                showToast("Cannot paste parent to child");
+            }
         }
     }
 
     public void moveList(ListTree destination) {
         if(copied != null) {
-            if(copied.parent == null) {
-                showToast("Cannot move ROOT");
-            }
-            else {
-                if(listMoveCheck(copied, destination)) {
-                    listCopyRecurse(copied, destination);
-                    copied.parent.removeListAt(copied.parent.list.indexOf(copied) + 1);
-                    copied = null;
-                    cleanUp();
-                }
+            if(listMoveCheck(copied, destination)) {
+                listCopyRecurse(copied, destination);
+                copied.parent.removeListAt(copied.parent.list.indexOf(copied) + 1);
+                copied = null;
+                cleanUp();
+            } else {
+                showToast("Cannot move parent to child");
             }
         }
     }
