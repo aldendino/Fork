@@ -243,6 +243,7 @@ public class MainActivity extends Activity implements IOAble {
 
     private void goToRoot() {
         setCurrent(getRoot());
+        currentPath.clear();
         cleanUp();
     }
 
@@ -551,7 +552,7 @@ public class MainActivity extends Activity implements IOAble {
 
     public void pasteList(ListTree destination) {
         if(copied != null) {
-            if(listMoveCheck(copied, destination)) {
+            if(listPositionCheck(copied, destination)) {
                 listCopyRecurse(copied, destination);
                 copied = null;
                 cleanUp();
@@ -563,7 +564,7 @@ public class MainActivity extends Activity implements IOAble {
 
     public void moveList(ListTree destination) {
         if(copied != null) {
-            if(listMoveCheck(copied, destination)) {
+            if(listPositionCheck(copied, destination)) {
                 listCopyRecurse(copied, destination);
                 copied.parent.removeListAt(copied.parent.list.indexOf(copied) + 1);
                 copied = null;
@@ -584,9 +585,9 @@ public class MainActivity extends Activity implements IOAble {
         }
     }
 
-    public boolean listMoveCheck(ListTree source, ListTree destination) {
+    public boolean listPositionCheck(ListTree source, ListTree destination) {
         if(source == destination) return false;
         if(destination.parent == null) return true;
-        return listMoveCheck(source, destination.parent);
+        return listPositionCheck(source, destination.parent);
     }
 }
