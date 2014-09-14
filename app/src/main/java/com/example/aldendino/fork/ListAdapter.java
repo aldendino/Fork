@@ -51,7 +51,7 @@ public class ListAdapter extends BaseAdapter {
         TextView number = (TextView) vi.findViewById(R.id.number);
         if(list.isList()) {
             if(list.list.size() > 0) {
-                number.setText("[" + list.list.size() + "]");
+                number.setText("" + list.list.size());
             }
         }
         else number.setText("");

@@ -8,4 +8,5 @@
     <dimen name="listItemPaddingBetween">5dp</dimen>
     <dimen name="buttonMargin">5dp</dimen>
     <dimen name="bannerPadding">3dp</dimen>
+    <dimen name="ringPadding">5dp</dimen>
 </resources>
