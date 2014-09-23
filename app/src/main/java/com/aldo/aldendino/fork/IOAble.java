@@ -1,11 +1,9 @@
-package com.example.aldendino.fork;
+package com.aldo.aldendino.fork;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.util.ArrayList;
-
-import android.content.Context;
 
 public interface IOAble {
     public FileInputStream openFileInput(String filename) throws FileNotFoundException ;

@@ -7,6 +7,7 @@
     tools:context=".MainActivity" >
 
     <TextView
+        android:allowBackup="true"
         android:id="@+id/textViewBanner"
         android:background="@color/wine_dregs"
         android:singleLine="true"

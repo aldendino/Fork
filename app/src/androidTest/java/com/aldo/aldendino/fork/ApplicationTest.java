@@ -1,4 +1,4 @@
-package com.example.aldendino.fork;
+package com.aldo.aldendino.fork;
 
 import android.app.Application;
 import android.test.ApplicationTestCase;
