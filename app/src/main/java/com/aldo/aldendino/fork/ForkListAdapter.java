@@ -35,7 +35,7 @@ public class ForkListAdapter extends BaseAdapter {
 
     @Override
     public long getItemId(int position) {
-        return position;
+        return position; //Dante: return i;
     }
 
     @Override
@@ -43,7 +43,8 @@ public class ForkListAdapter extends BaseAdapter {
         View vi = convertView;
         if (vi == null)
             vi = inflater.inflate(R.layout.list_item, null);
-        ListTree list = data[position];
+        //LayoutInflater.from(MainActivity.this).inflate(R.layout.list_item, null);
+        ListTree list = data[position]; // = getItem(i);
         TextView index = (TextView) vi.findViewById(R.id.index);
         index.setText((position + 1) + ".");
         TextView text = (TextView) vi.findViewById(R.id.text);
