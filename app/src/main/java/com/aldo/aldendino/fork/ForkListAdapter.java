@@ -10,13 +10,13 @@ import android.widget.TextView;
 /**
  * Created by aldendino on 2014-09-09.
  */
-public class ListAdapter extends BaseAdapter {
+public class ForkListAdapter extends BaseAdapter {
 
     Context context;
     ListTree[] data;
     private static LayoutInflater inflater = null;
 
-    public ListAdapter(Context context, ListTree[] data) {
+    public ForkListAdapter(Context context, ListTree[] data) {
         this.context = context;
         this.data = data;
         inflater = (LayoutInflater) context

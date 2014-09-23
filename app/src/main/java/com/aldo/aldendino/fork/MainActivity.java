@@ -267,8 +267,8 @@ public class MainActivity extends Activity implements IOAble {
     private void populateListView()
     {
         ListTree[] items = current.getListArray() ;
-        ListAdapter listAdapter = new ListAdapter(this, items);
-        listView.setAdapter(listAdapter) ;
+        ForkListAdapter forkListAdapter = new ForkListAdapter(this, items);
+        listView.setAdapter(forkListAdapter) ;
         setHome();
     }
 
