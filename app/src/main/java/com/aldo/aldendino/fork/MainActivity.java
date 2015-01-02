@@ -1,6 +1,9 @@
 package com.aldo.aldendino.fork;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 
 import android.net.Uri;
 import android.os.Bundle;
@@ -499,9 +502,9 @@ public class MainActivity extends Activity implements IOAble {
 
     public void startEmail(String subject, String body) {
         Intent emailIntent = new Intent(android.content.Intent.ACTION_SENDTO);
-
+        String currentDateandTime = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
         String uriText = "mailto:" + Uri.encode("") +
-                "?subject=" + Uri.encode(subject) +
+                "?subject=" + Uri.encode(subject + " " + currentDateandTime) +
                 "&body=" + Uri.encode(body);
         Uri uri = Uri.parse(uriText);
         emailIntent.setData(uri);
