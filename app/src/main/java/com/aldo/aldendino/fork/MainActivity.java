@@ -34,6 +34,8 @@ import android.widget.Toast;
 
 public class MainActivity extends Activity implements IOAble {
 
+    static final String LIST_KEY = "listkey";
+
     private enum AddPos {TOP, BOTTOM}
     private TextView textViewBanner;
     private ListView listView ;
@@ -192,12 +194,13 @@ public class MainActivity extends Activity implements IOAble {
 
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
+        boolean enabled = copied != null;
         MenuItem pasteItem = menu.findItem(R.id.action_paste);
-        pasteItem.setEnabled(copied != null);
-        pasteItem.setVisible(copied != null);
+        pasteItem.setEnabled(enabled);
+        pasteItem.setVisible(enabled);
         MenuItem moveItem = menu.findItem(R.id.action_move);
-        moveItem.setEnabled(copied != null);
-        moveItem.setVisible(copied != null);
+        moveItem.setEnabled(enabled);
+        moveItem.setVisible(enabled);
         super.onPrepareOptionsMenu(menu);
         return true;
     }
@@ -250,7 +253,7 @@ public class MainActivity extends Activity implements IOAble {
         cleanUp();
     }
 
-    private void setHome() {
+    public void setHome() {
         getActionBar().setDisplayHomeAsUpEnabled(current != root);
     }
 
@@ -504,7 +507,7 @@ public class MainActivity extends Activity implements IOAble {
         Intent emailIntent = new Intent(android.content.Intent.ACTION_SENDTO);
         String currentDateandTime = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
         String uriText = "mailto:" + Uri.encode("") +
-                "?subject=" + Uri.encode(subject + " " + currentDateandTime) +
+                "?subject=" + Uri.encode(subject + " (" + currentDateandTime + ")") +
                 "&body=" + Uri.encode(body);
         Uri uri = Uri.parse(uriText);
         emailIntent.setData(uri);
@@ -519,18 +522,20 @@ public class MainActivity extends Activity implements IOAble {
     public void createOptions(int position) {
         final int pos = position;
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        String[] options = new String[4];
+        String[] options = new String[5];
         options[0] = "Clip";
         options[1] = "Edit";
         options[2] = "Copy";
         options[3] = "Remove";
+        options[4] = "Share";
         builder.setTitle("Options")
                 .setItems(options, new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
                         if (which == 0) setClipboard("Fork List", current.list.get(pos).name);
                         else if (which == 1) openEditor(current.list.get(pos));
                         else if (which == 2) copyList(current.list.get(pos));
-                        else openRemoveDialog(pos);
+                        else if (which == 3) openRemoveDialog(pos);
+                        else shareList(current.list.get(pos));
                     }
                 });
         builder.create().show();
@@ -576,6 +581,13 @@ public class MainActivity extends Activity implements IOAble {
                 showToast("Cannot move parent to child");
             }
         }
+    }
+
+    public void shareList(ListTree source) {
+        Intent sendIntent = new Intent(Intent.ACTION_SEND);
+        sendIntent.setType("text/plain");
+        sendIntent.putExtra(Intent.EXTRA_STREAM, source.name);
+        startActivity(Intent.createChooser(sendIntent, "Share List"));
     }
 
     public void listCopyRecurse(ListTree source, ListTree destination) {

@@ -9,6 +9,7 @@
         android:id="@+id/editEditText"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:imeOptions="flagNoExtractUi"
         android:layout_marginTop="16dp"
         android:layout_marginLeft="4dp"
         android:layout_marginRight="4dp"
