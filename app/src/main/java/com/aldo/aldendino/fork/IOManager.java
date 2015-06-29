@@ -11,13 +11,28 @@ import android.content.Context;
 
 public class IOManager {
 
-    private IOAble ioable ;
+    public IOAble ioable ;
 
     private String rootName = "ROOT" ;
     private String dataFilename = "data" ;
     private String currentFilename = "current" ;
 
-    public IOManager(IOAble ioable) {
+    private static IOManager manager;
+
+    public static void initiazlize(IOAble ioable) {
+        if(manager == null) {
+            manager = new IOManager(ioable);
+        }
+        else {
+            manager.ioable = ioable;
+        }
+    }
+
+    public static IOManager getInstance() {
+        return manager;
+    }
+
+    private IOManager(IOAble ioable) {
         this.ioable = ioable ;
     }
 

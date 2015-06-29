@@ -4,6 +4,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 
 import android.app.ActionBar;
 import android.net.Uri;
@@ -18,6 +19,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.support.v7.app.ActionBarActivity;
+import android.util.Log;
 import android.util.SparseArray;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -73,7 +75,8 @@ public class MainActivity extends ActionBarActivity implements IOAble {
         //Stop the soft keyboard from coming up automatically
         this.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN) ;
 
-        io = new IOManager(this) ;
+        IOManager.initiazlize(this);
+        io = IOManager.getInstance(); //new IOManager(this) ;
         clipboardManager = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
         preferences = PreferenceManager.getDefaultSharedPreferences(this) ;
         copied = null;
@@ -436,15 +439,15 @@ public class MainActivity extends ActionBarActivity implements IOAble {
         alertDialogBuilder.setMessage("Remove this item?\n\"" + current.list.get(pos).name + "\"") ;
         //
         alertDialogBuilder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog,int id) {
+            public void onClick(DialogInterface dialog, int id) {
                 current.removeListAt(pos + 1);
                 cleanUp();
                 //scrollToIndex(pos);
             }
         }) ;
         alertDialogBuilder.setNegativeButton("No", new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog,int id) {
-                dialog.cancel() ;
+            public void onClick(DialogInterface dialog, int id) {
+                dialog.cancel();
             }
         }) ;
         AlertDialog alertDialog = alertDialogBuilder.create();
@@ -493,18 +496,20 @@ public class MainActivity extends ActionBarActivity implements IOAble {
                 .setPositiveButton(R.string.accept, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int id) {
-                        addEditText = (EditText) editView.findViewById(R.id.addEditText);
+                        /*addEditText = (EditText) editView.findViewById(R.id.addEditText);
 
                         String input = addEditText.getText().toString();
                         if (!input.equals("")) {
-                            if (location == AddPos.TOP) current.addLeafFirst(input);
-                            if (location == AddPos.BOTTOM) current.addLeaf(input);
-                            cleanUp();
+                            if (location == AddPos.TOP)
+                                current.addLeafFirst(input);
+                            if (location == AddPos.BOTTOM)
+                                current.addLeaf(input);
+                            ((MainActivity) IOManager.getInstance().ioable).cleanUp();
                             //if(location == AddPos.BOTTOM) scrollToBottom(); //Not working :/
                         } else {
                             Toast.makeText(getApplicationContext(), "Invalid list name", Toast.LENGTH_SHORT).show();
-                        }
-
+                        }*/
+                        ((MainActivity) IOManager.getInstance().ioable).addElement(location, editView);
                     }
                 })
                 .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
@@ -514,7 +519,23 @@ public class MainActivity extends ActionBarActivity implements IOAble {
                 });
         AlertDialog ad = builder.create();
         ad.show();
-        ad.getWindow().setSoftInputMode (WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE);
+        ad.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE);
+    }
+
+    public void addElement(AddPos location, View editView) {
+        addEditText = (EditText) editView.findViewById(R.id.addEditText);
+
+        String input = addEditText.getText().toString();
+        if (!input.equals("")) {
+            if (location == AddPos.TOP)
+                current.addLeafFirst(input);
+            if (location == AddPos.BOTTOM)
+                current.addLeaf(input);
+            cleanUp();
+            //if(location == AddPos.BOTTOM) scrollToBottom(); //Not working :/
+        } else {
+            Toast.makeText(getApplicationContext(), "Invalid list name", Toast.LENGTH_SHORT).show();
+        }
     }
 
     public void scrollToBottom()
@@ -548,27 +569,28 @@ public class MainActivity extends ActionBarActivity implements IOAble {
     	emailIntent.putExtra(android.content.Intent.EXTRA_TEXT, content);*/
     }
 
+    enum ListOption {Clip, Edit, Copy, Remove, Select, Place, Swap, Share}
+
     public void createOptions(int position) {
+        ListOption.values();
+        String[] options = new String[ListOption.values().length];
+        for(int i = 0; i < ListOption.values().length; i++) {
+            options[i] = ListOption.values()[i].toString();
+        }
         final int pos = position;
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        String[] options = new String[7];
-        options[0] = "Clip";
-        options[1] = "Edit";
-        options[2] = "Copy";
-        options[3] = "Remove";
-        options[4] = "Select";
-        options[5] = "Place";
-        options[6] = "Share";
         builder.setTitle("Options")
                 .setItems(options, new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
-                        if (which == 0) setClipboard("Fork List", current.list.get(pos).name);
-                        else if (which == 1) openEditor(current.list.get(pos));
-                        else if (which == 2) copyList(current.list.get(pos));
-                        else if (which == 3) openRemoveDialog(pos);
-                        else if (which == 4) selectList(pos);
-                        else if (which == 5) setList(pos);
-                        else shareList(current.list.get(pos));
+                        ListOption option = ListOption.values()[which];
+                        if (option == ListOption.Clip) setClipboard("Fork List", current.list.get(pos).name);
+                        else if (option == ListOption.Edit) openEditor(current.list.get(pos));
+                        else if (option == ListOption.Copy) copyList(current.list.get(pos));
+                        else if (option == ListOption.Remove) openRemoveDialog(pos);
+                        else if (option == ListOption.Select) selectList(pos);
+                        else if (option == ListOption.Place) setList(pos);
+                        else if (option == ListOption.Swap) swapList(pos);
+                        else if (option == ListOption.Share)shareList(current.list.get(pos));
                     }
                 });
         builder.create().show();
@@ -648,6 +670,17 @@ public class MainActivity extends ActionBarActivity implements IOAble {
     private void setList(int pos) {
         if(selected != null) {
             current.moveTo(selected.getIndex(), pos);
+            cleanUp();
+            selected = null;
+        }
+        else {
+            showToast("No list selected");
+        }
+    }
+
+    private void swapList(int pos) {
+        if(selected != null) {
+            current.swap(selected.getIndex(), pos);
             cleanUp();
             selected = null;
         }
