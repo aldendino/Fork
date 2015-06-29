@@ -176,6 +176,10 @@ public class MainActivity extends ActionBarActivity implements IOAble {
                 setClipboard(current.name, getListAsString(current));
                 break;
             }
+            case R.id.action_sort: {
+                sortList(current);
+                break;
+            }
             case R.id.action_copy: {
                 copyList(current);
                 break;
@@ -555,9 +559,9 @@ public class MainActivity extends ActionBarActivity implements IOAble {
 
     public void startEmail(String subject, String body) {
         Intent emailIntent = new Intent(android.content.Intent.ACTION_SENDTO);
-        String currentDateandTime = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
+        String currentDateAndTime = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
         String uriText = "mailto:" + Uri.encode("") +
-                "?subject=" + Uri.encode(subject + " (" + currentDateandTime + ")") +
+                "?subject=" + Uri.encode(subject + " (" + currentDateAndTime + ")") +
                 "&body=" + Uri.encode(body);
         Uri uri = Uri.parse(uriText);
         emailIntent.setData(uri);
@@ -591,6 +595,7 @@ public class MainActivity extends ActionBarActivity implements IOAble {
                         else if (option == ListOption.Place) setList(pos);
                         else if (option == ListOption.Swap) swapList(pos);
                         else if (option == ListOption.Share)shareList(current.list.get(pos));
+                        else Log.d("all","Invalid option " + which);
                     }
                 });
         builder.create().show();
@@ -611,7 +616,7 @@ public class MainActivity extends ActionBarActivity implements IOAble {
 
     public void copyList(ListTree source) {
         copied = source;
-        invalidateOptionsMenu();
+        //invalidateOptionsMenu();
     }
 
     public void pasteList(ListTree destination) {
@@ -686,6 +691,13 @@ public class MainActivity extends ActionBarActivity implements IOAble {
         }
         else {
             showToast("No list selected");
+        }
+    }
+
+    private void sortList(ListTree list) {
+        if(list != null) {
+            list.sort();
+            cleanUp();
         }
     }
 }

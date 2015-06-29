@@ -2,8 +2,9 @@ package com.aldo.aldendino.fork;
 
 import java.io.Serializable;
 import java.util.ArrayList ;
+import java.util.Collections;
 
-public class ListTree implements Serializable {
+public class ListTree implements Serializable, Comparable<ListTree> {
     private static final long serialVersionUID = -6110776202976443110L;
     public String name ;
     public ArrayList<ListTree> list ;
@@ -218,6 +219,14 @@ public class ListTree implements Serializable {
     public int getIndex() {
         if(parent == null) return -1;
         return parent.list.indexOf(this);
+    }
+
+    public void sort() {
+        Collections.sort(list);
+    }
+
+    public int compareTo(ListTree list) {
+        return this.name.compareTo(list.name);
     }
 
     @Override

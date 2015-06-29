@@ -8,6 +8,7 @@ import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 
 import android.content.Context;
+import android.util.Log;
 
 public class IOManager {
 
@@ -63,7 +64,8 @@ public class IOManager {
         }
         catch(Exception e)
         {
-            ioable.showToast("Current path exception") ;
+            //ioable.showToast("Current path exception") ;
+            Log.d("all", "current path exception");
             ioable.setCurrentPath(new ArrayList<Integer>()) ;
             ioable.setCurrent(ioable.getRoot()) ;
         }
