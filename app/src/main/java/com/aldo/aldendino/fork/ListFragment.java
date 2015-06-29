@@ -1,6 +1,6 @@
 package com.aldo.aldendino.fork;
 
-import android.app.Fragment;
+import android.support.v4.app.Fragment;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -29,8 +29,14 @@ public class ListFragment extends Fragment {
         View footerView = getActivity().getLayoutInflater().inflate(R.layout.footer_button, null);
         listView.addFooterView(footerView);
         addButton = (Button) footerView.findViewById(R.id.button2) ;
-        if(savedInstanceState != null) {
+        addButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
 
+            }
+        });
+        if(savedInstanceState != null) {
+            // Todo
         }
         populateListView();
         return rootView;
@@ -39,6 +45,7 @@ public class ListFragment extends Fragment {
     @Override
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
+        // Todo
     }
 
     private void populateListView()
@@ -46,6 +53,6 @@ public class ListFragment extends Fragment {
         ListTree[] items = list.getListArray() ;
         ForkListAdapter forkListAdapter = new ForkListAdapter(getActivity(), items);
         listView.setAdapter(forkListAdapter) ;
-        ((MainActivity) getActivity()).setHome();
+        //((MainActivity) getActivity()).setHome(); inconvertable types error?
     }
 }

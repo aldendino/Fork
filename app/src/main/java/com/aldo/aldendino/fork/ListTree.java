@@ -74,6 +74,10 @@ public class ListTree implements Serializable {
         item.parent = this;
     }
 
+    public ArrayList<ListTree> getArrayList() {
+        return list;
+    }
+
     public ListTree getList(String listName)
     {
         if(isList())
@@ -161,6 +165,17 @@ public class ListTree implements Serializable {
             return true ;
         }
         return false ;
+    }
+
+    public boolean moveTo(int fromIndex, int toIndex) {
+        if(isInRange(fromIndex) && isInRange(toIndex))
+        {
+            if(fromIndex == toIndex) return true ;
+            ListTree temp = list.remove(fromIndex);
+            list.add(toIndex, temp);
+            return true ;
+        }
+        return false;
     }
 
     public boolean removeRange(int fromIndex, int toIndex)

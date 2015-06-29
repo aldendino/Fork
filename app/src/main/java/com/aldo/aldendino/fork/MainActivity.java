@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 
+import android.app.ActionBar;
 import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -16,10 +17,13 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.support.v7.app.ActionBarActivity;
+import android.util.SparseArray;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.view.View;
 
@@ -32,7 +36,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-public class MainActivity extends Activity implements IOAble {
+public class MainActivity extends ActionBarActivity implements IOAble {
 
     static final String LIST_KEY = "listkey";
 
@@ -46,6 +50,7 @@ public class MainActivity extends Activity implements IOAble {
     public ListTree current ;
     public ListTree previous ;
     public ListTree copied;
+    public ListTree selected;
 
     private String baseTitle ;
 
@@ -64,6 +69,7 @@ public class MainActivity extends Activity implements IOAble {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
         //Stop the soft keyboard from coming up automatically
         this.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN) ;
 
@@ -71,6 +77,7 @@ public class MainActivity extends Activity implements IOAble {
         clipboardManager = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
         preferences = PreferenceManager.getDefaultSharedPreferences(this) ;
         copied = null;
+        selected = null;
 
         textViewBanner = (TextView) findViewById(R.id.textViewBanner);
         listView = (ListView) findViewById(R.id.listView1) ;
@@ -254,7 +261,10 @@ public class MainActivity extends Activity implements IOAble {
     }
 
     public void setHome() {
-        getActionBar().setDisplayHomeAsUpEnabled(current != root);
+        ActionBar actionBar = getActionBar();
+        if(actionBar != null) {
+            actionBar.setDisplayHomeAsUpEnabled(current != root);
+        }
     }
 
     private void cleanUp()
@@ -280,7 +290,7 @@ public class MainActivity extends Activity implements IOAble {
 
     public void savePreferences()
     {
-        SharedPreferences.Editor editor = preferences.edit();
+        //SharedPreferences.Editor editor = preferences.edit();
         //editor.putInt(COUNT_KEY, levelCount) ;
         //editor.commit();
     }
@@ -314,7 +324,7 @@ public class MainActivity extends Activity implements IOAble {
 
     //List output
 
-    public String getListAsString(ListTree rootTree)
+    public String getListTopLayerAsString(ListTree rootTree)
     {
         if(rootTree != null)
         {
@@ -370,6 +380,28 @@ public class MainActivity extends Activity implements IOAble {
                 setClipRecurse(list, white_space);
             }
         }
+    }
+
+    private String getListAsString(ListTree list) {
+        String listAsString = "";
+        String whiteSpace = "";
+        listAsString = getListAsStringRecurse(list, whiteSpace);
+        return listAsString;
+    }
+
+    private String getListAsStringRecurse(ListTree list, String whiteSpace){
+
+        String listAsString = "";
+        if(list != null) {
+            listAsString += whiteSpace + list.name + "\n";
+            whiteSpace += "    ";
+            if(list.list != null) {
+                for(ListTree listItem : list.list) {
+                    listAsString += getListAsStringRecurse(listItem, whiteSpace);
+                }
+            }
+        }
+        return listAsString;
     }
 
     public void openRemoveAllDialog()
@@ -431,25 +463,24 @@ public class MainActivity extends Activity implements IOAble {
         builder.setTitle("Edit") ;
         builder.setView(editView).setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
-                dialog.cancel() ;
+                dialog.cancel();
             }
         });
         final ListTree theList = list;
         builder.setView(editView).setPositiveButton("Accept", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
                 String input = editText.getText().toString();
-                if(!input.equals("")) {
+                if (!input.equals("")) {
                     theList.name = input;
-                    cleanUp() ;
-                }
-                else {
-                    Toast.makeText(getApplicationContext(), "Invalid list name", Toast.LENGTH_SHORT).show() ;
+                    cleanUp();
+                } else {
+                    Toast.makeText(getApplicationContext(), "Invalid list name", Toast.LENGTH_SHORT).show();
                 }
             }
         });
         AlertDialog ad = builder.create();
         ad.show();
-        ad.getWindow().setSoftInputMode (WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE);
+        ad.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE);
     }
 
     public void openAddDialog(final AddPos location) {
@@ -462,17 +493,16 @@ public class MainActivity extends Activity implements IOAble {
                 .setPositiveButton(R.string.accept, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int id) {
-                        addEditText = (EditText) editView.findViewById(R.id.addEditText) ;
+                        addEditText = (EditText) editView.findViewById(R.id.addEditText);
 
                         String input = addEditText.getText().toString();
-                        if(!input.equals("")) {
-                            if(location == AddPos.TOP) current.addLeafFirst(input);
-                            if(location == AddPos.BOTTOM) current.addLeaf(input);
-                            cleanUp() ;
+                        if (!input.equals("")) {
+                            if (location == AddPos.TOP) current.addLeafFirst(input);
+                            if (location == AddPos.BOTTOM) current.addLeaf(input);
+                            cleanUp();
                             //if(location == AddPos.BOTTOM) scrollToBottom(); //Not working :/
-                        }
-                        else {
-                            Toast.makeText(getApplicationContext(), "Invalid list name", Toast.LENGTH_SHORT).show() ;
+                        } else {
+                            Toast.makeText(getApplicationContext(), "Invalid list name", Toast.LENGTH_SHORT).show();
                         }
 
                     }
@@ -490,7 +520,6 @@ public class MainActivity extends Activity implements IOAble {
     public void scrollToBottom()
     {
         if(listView.getChildCount() == 0) return;
-        //int count = listView.getChildCount();
         listView.setSelection(current.list.size());
     }
 
@@ -522,12 +551,14 @@ public class MainActivity extends Activity implements IOAble {
     public void createOptions(int position) {
         final int pos = position;
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        String[] options = new String[5];
+        String[] options = new String[7];
         options[0] = "Clip";
         options[1] = "Edit";
         options[2] = "Copy";
         options[3] = "Remove";
-        options[4] = "Share";
+        options[4] = "Select";
+        options[5] = "Place";
+        options[6] = "Share";
         builder.setTitle("Options")
                 .setItems(options, new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
@@ -535,6 +566,8 @@ public class MainActivity extends Activity implements IOAble {
                         else if (which == 1) openEditor(current.list.get(pos));
                         else if (which == 2) copyList(current.list.get(pos));
                         else if (which == 3) openRemoveDialog(pos);
+                        else if (which == 4) selectList(pos);
+                        else if (which == 5) setList(pos);
                         else shareList(current.list.get(pos));
                     }
                 });
@@ -543,8 +576,9 @@ public class MainActivity extends Activity implements IOAble {
 
     public String getPathString() {
         String content = getCurrent().name;
+        String pathDelim = " / ";
         if(getCurrent().parent == null) return content;
-        return getPathStringRecurse(content, " > ", getCurrent());
+        return getPathStringRecurse(content, pathDelim, getCurrent());
     }
 
     public String getPathStringRecurse(String content, String divider, ListTree location) {
@@ -584,10 +618,11 @@ public class MainActivity extends Activity implements IOAble {
     }
 
     public void shareList(ListTree source) {
-        Intent sendIntent = new Intent(Intent.ACTION_SEND);
+        startEmail(source.name, getListAsString(source));
+        /*Intent sendIntent = new Intent(Intent.ACTION_SEND);
         sendIntent.setType("text/plain");
         sendIntent.putExtra(Intent.EXTRA_STREAM, source.name);
-        startActivity(Intent.createChooser(sendIntent, "Share List"));
+        startActivity(Intent.createChooser(sendIntent, "Share List"));*/
     }
 
     public void listCopyRecurse(ListTree source, ListTree destination) {
@@ -604,5 +639,20 @@ public class MainActivity extends Activity implements IOAble {
         if(source == destination) return false;
         if(destination.parent == null) return true;
         return listPositionCheck(source, destination.parent);
+    }
+
+    private void selectList(int pos) {
+        selected = current.list.get(pos);
+    }
+
+    private void setList(int pos) {
+        if(selected != null) {
+            current.moveTo(selected.getIndex(), pos);
+            cleanUp();
+            selected = null;
+        }
+        else {
+            showToast("No list selected");
+        }
     }
 }
